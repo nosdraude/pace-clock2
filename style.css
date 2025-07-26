@@ -10,15 +10,17 @@ h1 {
 }
 
 .timer {
-  font-size: 72px;
+  font-size: 400%;   /* 400% bigger */
   font-weight: bold;
   margin: 20px 0;
   color: #333;
 }
 
 .status {
-  font-size: 20px;
+  font-size: 200%;   /* 200% bigger */
+  font-weight: bold; /* Make it bold */
   margin-bottom: 20px;
+  color: #444;
 }
 
 button {
