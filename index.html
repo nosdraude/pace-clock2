@@ -10,7 +10,6 @@
   <style>
     body {
       margin: 0;
-      padding: 0;
       font-family: sans-serif;
       background: #f4f4f4;
       display: flex;
@@ -18,47 +17,75 @@
       height: 100vh;
       text-align: center;
     }
+
     header {
       background: #2196f3;
       color: white;
       padding: 10px;
       font-size: 24px;
     }
-    .main-display {
-      flex: 2;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-    .timer {
-      font-size: 10vw;
-      font-weight: bold;
-      color: #333;
-    }
-    .status {
-      font-size: 4vw;
-      font-weight: bold;
-      color: #444;
-      margin-bottom: 20px;
-    }
+
     .controls {
-      flex: 1;
-      padding: 10px;
-      overflow-y: auto;
+      padding: 20px;
     }
+
     input, select, button {
       font-size: 1.2rem;
       margin: 5px;
       padding: 8px;
     }
+
     ul {
       list-style-type: none;
       padding: 0;
     }
+
     li {
       margin-top: 4px;
     }
+
+    /* Overlay fullscreen mode */
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: white;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .overlay.show {
+      display: flex;
+    }
+
+    .timer {
+      font-size: 10vw;
+      font-weight: bold;
+      color: #222;
+    }
+
+    .status {
+      font-size: 4vw;
+      font-weight: bold;
+      margin-bottom: 30px;
+      color: #444;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 2rem;
+      background: none;
+      border: none;
+      color: #888;
+      cursor: pointer;
+    }
+
   </style>
   <script>
     if ('serviceWorker' in navigator) {
@@ -67,13 +94,8 @@
   </script>
 </head>
 <body>
-  <header>Swim Pace Clock</header>
 
-  <div class="main-display">
-    <div class="status" id="phase">Phase: -</div>
-    <div class="status" id="workoutStatus">Workout: -, Rep: -</div>
-    <div class="timer" id="timer">00:00</div>
-  </div>
+  <header>Swim Pace Clock</header>
 
   <div class="controls">
     <select id="type">
@@ -92,6 +114,14 @@
     <button onclick="stop()">Stop</button>
     <button onclick="reset()">Reset</button>
     <ul id="workouts"></ul>
+  </div>
+
+  <!-- Fullscreen Timer Overlay -->
+  <div id="overlay" class="overlay">
+    <button class="close-btn" onclick="closeOverlay()">❌</button>
+    <div class="status" id="phase">Phase: -</div>
+    <div class="status" id="workoutStatus">Workout: -, Rep: -</div>
+    <div class="timer" id="timer">00:00</div>
   </div>
 
   <script src="app.js"></script>
