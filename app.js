@@ -9,6 +9,7 @@ const timerEl = document.getElementById('timer');
 const phaseEl = document.getElementById('phase');
 const statusEl = document.getElementById('workoutStatus');
 const workoutsEl = document.getElementById('workouts');
+const overlay = document.getElementById('overlay');
 
 const startSound = new Audio('start.mp3');
 const goalSound = new Audio('end_goal.mp3');
@@ -56,6 +57,7 @@ function renderWorkouts() {
 
 function start() {
   if (isRunning || workouts.length === 0) return;
+  overlay.classList.add('show');
   isRunning = true;
   currentIndex = 0;
   currentRep = 0;
@@ -121,6 +123,7 @@ function stop() {
   isRunning = false;
   updateDisplay('Stopped', '-', '-');
   timerEl.textContent = '00:00';
+  overlay.classList.remove('show');
 }
 
 function reset() {
@@ -131,6 +134,9 @@ function reset() {
   renderWorkouts();
 }
 
+function closeOverlay() {
+  overlay.classList.remove('show');
+}
 function playSound(audio) {
   audio.currentTime = 0;
   audio.play().catch(() => {});
