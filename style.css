@@ -1,0 +1,45 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 20px;
+  background: #f1f1f1;
+}
+
+h1 {
+  color: #2196f3;
+}
+
+#timerDisplay {
+  font-size: 60px;
+  margin: 20px 0;
+}
+
+#phaseDisplay {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+form {
+  margin: 20px 0;
+}
+
+input, select {
+  margin: 5px;
+  padding: 10px;
+}
+
+button {
+  padding: 10px 20px;
+  margin: 5px;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  background: white;
+  margin: 5px 0;
+  padding: 10px;
+}

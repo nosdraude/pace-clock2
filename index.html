@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#2196f3"/>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css" />
+  <title>Swim Pace Clock</title>
+</head>
+<body>
+  <h1>Swim Pace Clock</h1>
+  <div id="timerDisplay">00:00</div>
+  <div id="phaseDisplay">Waiting</div>
+  <button id="startBtn">Start</button>
+  <button id="stopBtn">Stop</button>
+
+  <form id="workoutForm">
+    <select id="type">
+      <option value="warmUp">Warm Up</option>
+      <option value="drill">Drill</option>
+      <option value="mainSet">Main Set</option>
+      <option value="testSet">Test Set</option>
+      <option value="coolDown">Cool Down</option>
+    </select>
+    <input type="number" id="reps" placeholder="Reps" required />
+    <input type="number" id="goalTime" placeholder="Goal Time (s)" required />
+    <input type="number" id="restTime" placeholder="Rest Time (s)" required />
+    <input type="number" id="restBetweenSets" placeholder="Rest Between Sets (s)" />
+    <button type="submit">Add Workout</button>
+  </form>
+
+  <ul id="workoutList"></ul>
+
+  <script src="app.js"></script>
+</body>
+</html>
