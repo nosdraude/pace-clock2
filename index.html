@@ -1,37 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#2196f3"/>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon.png" type="image/png"/>
   <title>Swim Pace Clock</title>
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 20px; }
-    input { width: 60px; margin: 5px; font-size: 16px; }
-    ul { list-style: none; padding: 0; }
-    li { margin: 5px 0; }
-    button { margin: 5px; padding: 10px 20px; font-size: 16px; }
-    #timer { font-size: 80px; font-weight: bold; margin: 20px 0; }
-    #status, #repStatus, #workoutStatus { font-size: 20px; margin: 10px 0; }
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      text-align: center;
+      background-color: #f4f4f4;
+    }
+    h1 {
+      color: #2196f3;
+    }
+    .timer {
+      font-size: 72px;
+      font-weight: bold;
+      margin: 20px 0;
+      color: #333;
+    }
+    .status {
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+    button {
+      font-size: 18px;
+      margin: 5px;
+      padding: 10px 20px;
+    }
+    input {
+      margin: 5px;
+      padding: 5px;
+      font-size: 16px;
+    }
   </style>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js");
+    }
+  </script>
 </head>
 <body>
   <h1>Swim Pace Clock</h1>
+  <div class="status" id="phase">Phase: -</div>
+  <div class="status" id="workoutStatus">Workout: -, Rep: -</div>
+  <div class="timer" id="timer">00:00</div>
+
   <div>
-    <input id="reps" type="number" value="2"> Reps
-    <input id="goal" type="number" value="60"> Goal(s)
-    <input id="rest" type="number" value="10"> Rest(s)
-    <input id="setrest" type="number" value="0"> Set Rest(s)
-    <button onclick="addWorkout()">Add</button>
-  </div>
-  <ul id="workouts"></ul>
-  <div>
+    <select id="type">
+      <option value="warmUp">Warm Up</option>
+      <option value="drill">Drill</option>
+      <option value="mainSet">Main Set</option>
+      <option value="testSet">Test Set</option>
+      <option value="coolDown">Cool Down</option>
+    </select><br/>
+    <input type="number" id="reps" placeholder="Reps" /><br/>
+    <input type="number" id="goal" placeholder="Goal Time (s)" /><br/>
+    <input type="number" id="rest" placeholder="Rest Time (s)" /><br/>
+    <input type="number" id="setRest" placeholder="Rest Between Sets (s)" /><br/>
+    <button onclick="addWorkout()">Add Workout</button>
     <button onclick="start()">Start</button>
     <button onclick="stop()">Stop</button>
-    <button onclick="resetAll()">Reset</button>
+    <button onclick="reset()">Reset</button>
   </div>
-  <h2 id="status">Idle</h2>
-  <div id="workoutStatus">Workout: 0 / 0</div>
-  <div id="repStatus">Rep: 0 / 0</div>
-  <div id="timer">00:00</div>
+
+  <ul id="workouts"></ul>
+
   <script src="app.js"></script>
 </body>
 </html>
