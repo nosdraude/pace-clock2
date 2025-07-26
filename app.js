@@ -1,52 +1,142 @@
-let workouts = JSON.parse(localStorage.getItem('workouts') || '[]');
-let currentWorkout = 0, currentInterval = 0, currentRep = 0;
-let timer = null, isRunning = false;
-let timeLeft = 0, currentPhase = '';
+const workouts = [];
+let currentWorkoutIndex = 0;
+let currentRep = 0;
+let isRunning = false;
+let timer;
+let timeLeft;
+let phase = '';
+const timerDisplay = document.getElementById("timer");
+const phaseDisplay = document.getElementById("phase");
+const workoutStatusDisplay = document.getElementById("workoutStatus");
 
-const timerDisplay = document.getElementById('timerDisplay');
-const phaseDisplay = document.getElementById('phaseDisplay');
-const startBtn = document.getElementById('startBtn');
-const stopBtn = document.getElementById('stopBtn');
-const workoutList = document.getElementById('workoutList');
+const startSound = new Audio('start.mp3');
+const goalEndSound = new Audio('end_goal.mp3');
+const restEndSound = new Audio('end_rest.mp3');
 
-// Sounds
-const sounds = {
-  start: new Audio('assets/sounds/start.mp3'),
-  goalEnd: new Audio('assets/sounds/end_goal.mp3'),
-  restEnd: new Audio('assets/sounds/end_rest.mp3'),
-};
+function addWorkout() {
+  const reps = parseInt(document.getElementById("reps").value);
+  const goal = parseInt(document.getElementById("goal").value);
+  const rest = parseInt(document.getElementById("rest").value);
+  const setRest = parseInt(document.getElementById("setRest").value) || 0;
+  const type = document.getElementById("type").value;
 
-// Preload sounds
-Object.values(sounds).forEach(sound => sound.load());
+  if (!reps || !goal || !rest) return alert("Please fill all fields");
+
+  workouts.push({
+    type,
+    reps,
+    goalTime: goal,
+    restTime: rest,
+    setRest: setRest
+  });
+
+  updateWorkoutList();
+}
 
 function updateWorkoutList() {
-  workoutList.innerHTML = '';
-  workouts.forEach((w, i) => {
-    const li = document.createElement('li');
-    li.innerText = `${w.type.toUpperCase()}: ${w.intervals.map(intv =>
-      `${intv.reps}x ${intv.goalTime}s + ${intv.restTime}s rest`).join(', ')}`;
-    workoutList.appendChild(li);
+  const ul = document.getElementById("workouts");
+  ul.innerHTML = "";
+  workouts.forEach((w, index) => {
+    const li = document.createElement("li");
+    li.textContent = `${w.type} - ${w.reps}x ${w.goalTime}s + ${w.restTime}s rest`;
+    const delBtn = document.createElement("button");
+    delBtn.textContent = "❌";
+    delBtn.onclick = () => {
+      workouts.splice(index, 1);
+      updateWorkoutList();
+    };
+    li.appendChild(delBtn);
+    ul.appendChild(li);
   });
 }
 
-function formatTime(seconds) {
-  const m = Math.floor(seconds / 60).toString();
-  const s = (seconds % 60).toString().padStart(2, '0');
-  return `${m}:${s}`;
+function start() {
+  if (workouts.length === 0 || isRunning) return;
+  isRunning = true;
+  currentWorkoutIndex = 0;
+  currentRep = 0;
+  runWorkout();
 }
 
-function setPhase(text) {
-  currentPhase = text;
-  phaseDisplay.innerText = text;
+function stop() {
+  clearInterval(timer);
+  isRunning = false;
+  phase = 'Stopped';
+  phaseDisplay.textContent = `Phase: ${phase}`;
 }
 
-function startTimer(duration, callback) {
+function reset() {
+  stop();
+  workouts.length = 0;
+  currentWorkoutIndex = 0;
+  currentRep = 0;
+  phase = '';
+  timerDisplay.textContent = "00:00";
+  phaseDisplay.textContent = "Phase: -";
+  workoutStatusDisplay.textContent = "Workout: -, Rep: -";
+  updateWorkoutList();
+}
+
+function runWorkout() {
+  const workout = workouts[currentWorkoutIndex];
+  if (!workout) {
+    isRunning = false;
+    phaseDisplay.textContent = "Finished";
+    return;
+  }
+
+  runInterval(workout, () => {
+    if (workout.setRest > 0) {
+      phase = 'Rest Between Sets';
+      phaseDisplay.textContent = `Phase: ${phase}`;
+      timeLeft = workout.setRest;
+      startSound.play();
+      runTimer(workout.setRest, () => {
+        currentWorkoutIndex++;
+        currentRep = 0;
+        runWorkout();
+      });
+    } else {
+      currentWorkoutIndex++;
+      currentRep = 0;
+      runWorkout();
+    }
+  });
+}
+
+function runInterval(workout, onComplete) {
+  const interval = () => {
+    if (currentRep >= workout.reps) {
+      onComplete();
+      return;
+    }
+
+    phase = 'Goal Time';
+    phaseDisplay.textContent = `Phase: ${phase}`;
+    workoutStatusDisplay.textContent = `Workout: ${workout.type}, Rep: ${currentRep + 1}/${workout.reps}`;
+    startSound.play();
+    runTimer(workout.goalTime, () => {
+      goalEndSound.play();
+      phase = 'Rest Time';
+      phaseDisplay.textContent = `Phase: ${phase}`;
+      runTimer(workout.restTime, () => {
+        restEndSound.play();
+        currentRep++;
+        interval();
+      });
+    });
+  };
+
+  interval();
+}
+
+function runTimer(duration, callback) {
+  clearInterval(timer);
   timeLeft = duration;
-  timerDisplay.innerText = formatTime(timeLeft);
-
+  updateTimerDisplay();
   timer = setInterval(() => {
     timeLeft--;
-    timerDisplay.innerText = formatTime(timeLeft);
+    updateTimerDisplay();
     if (timeLeft <= 0) {
       clearInterval(timer);
       callback();
@@ -54,100 +144,8 @@ function startTimer(duration, callback) {
   }, 1000);
 }
 
-function runWorkout() {
-  if (currentWorkout >= workouts.length) {
-    setPhase("Finished");
-    isRunning = false;
-    return;
-  }
-
-  const workout = workouts[currentWorkout];
-  const intervals = workout.intervals;
-
-  if (currentInterval >= intervals.length) {
-    if (workout.restBetweenSets) {
-      setPhase("Rest Between Sets");
-      sounds.start.play();
-      startTimer(workout.restBetweenSets, () => {
-        currentWorkout++;
-        currentInterval = 0;
-        currentRep = 0;
-        runWorkout();
-      });
-    } else {
-      currentWorkout++;
-      currentInterval = 0;
-      currentRep = 0;
-      runWorkout();
-    }
-    return;
-  }
-
-  const interval = intervals[currentInterval];
-
-  if (currentRep < interval.reps) {
-    setPhase("Goal Time");
-    sounds.start.play();
-    startTimer(interval.goalTime, () => {
-      sounds.goalEnd.play();
-      setPhase("Rest Time");
-      startTimer(interval.restTime, () => {
-        sounds.restEnd.play();
-        currentRep++;
-        runWorkout();
-      });
-    });
-  } else {
-    currentInterval++;
-    currentRep = 0;
-    runWorkout();
-  }
-}
-
-startBtn.addEventListener('click', () => {
-  if (!isRunning && workouts.length > 0) {
-    isRunning = true;
-    currentWorkout = 0;
-    currentInterval = 0;
-    currentRep = 0;
-    runWorkout();
-  }
-});
-
-stopBtn.addEventListener('click', () => {
-  clearInterval(timer);
-  isRunning = false;
-  setPhase("Stopped");
-  timerDisplay.innerText = "00:00";
-});
-
-document.getElementById('workoutForm').addEventListener('submit', e => {
-  e.preventDefault();
-
-  const type = document.getElementById('type').value;
-  const reps = parseInt(document.getElementById('reps').value);
-  const goalTime = parseInt(document.getElementById('goalTime').value);
-  const restTime = parseInt(document.getElementById('restTime').value);
-  const restBetweenSets = parseInt(document.getElementById('restBetweenSets').value || 0);
-
-  const workout = {
-    type,
-    intervals: [{
-      reps,
-      goalTime,
-      restTime
-    }],
-    restBetweenSets
-  };
-
-  workouts.push(workout);
-  localStorage.setItem('workouts', JSON.stringify(workouts));
-  updateWorkoutList();
-  e.target.reset();
-});
-
-updateWorkoutList();
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('service-worker.js');
+function updateTimerDisplay() {
+  const mins = String(Math.floor(timeLeft / 60)).padStart(2, "0");
+  const secs = String(timeLeft % 60).padStart(2, "0");
+  timerDisplay.textContent = `${mins}:${secs}`;
 }
